@@ -7,6 +7,14 @@ public class TermCounter {
     private String simNo;
     private long trkCnt;
 
+    public TermCounter() {
+    }
+
+    public TermCounter(String simNo, long trkCnt) {
+        this.simNo = simNo;
+        this.trkCnt = trkCnt;
+    }
+
     public String getSimNo() {
         return simNo;
     }

@@ -3,9 +3,16 @@ package com.lucendar.gnss.sdk.gateway;
 import java.util.Arrays;
 import java.util.StringJoiner;
 
-class ResetTrkCounterReq {
+public class ResetTrkCounterReq {
 
     private String[] simNos;
+
+    public ResetTrkCounterReq() {
+    }
+
+    public ResetTrkCounterReq(String[] simNos) {
+        this.simNos = simNos;
+    }
 
     public String[] getSimNos() {
         return simNos;
