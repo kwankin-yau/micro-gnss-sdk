@@ -4,12 +4,10 @@ plugins {
 }
 
 group 'com.lucendar.gnss'
-version '1.0.1'
+version '1.1.0-SNAPSHOT'
 
 compileJava.options.encoding = 'UTF-8'
 
-sourceCompatibility = '11'
-targetCompatibility = '11'
 
 
 
@@ -19,6 +17,20 @@ repositories {
 }
 
 dependencies {
+    implementation('com.google.code.gson:gson:2.10.1')
+    implementation("com.squareup.okhttp3:okhttp:4.11.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
+    implementation("org.slf4j:slf4j-api:2.0.7")
+
+    implementation("org.springframework:spring-websocket:6.0.10")
+    implementation("org.springframework:spring-messaging:6.0.10")
+
+
+    implementation("info.gratour.common:gratour-common:3.3.0-SNAPSHOT")
+    implementation("info.gratour.gnss:jt808-common:2.0.3-SNAPSHOT")
+    implementation("com.lucendar.strm:strm-sdk:3.4.2-SNAPSHOT")
+
+
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
 }
@@ -27,12 +39,30 @@ test {
     useJUnitPlatform()
 }
 
+
 task sourceJar(type: Jar) {
     from sourceSets.main.allSource
     archiveClassifier = 'sources'
 }
 
 publishing {
+    repositories {
+        maven {
+            if (project.version.toString().endsWith("-SNAPSHOT")) {
+                name = "snapshots"
+                url = "${snapshotUrl}"
+            } else {
+                name = "releases"
+                url = "${releaseUrl}"
+            }
+
+            credentials {
+                username = "${ossUser}"
+                password = "${ossPwd}"
+            }
+        }
+    }
+
     publications {
         maven(MavenPublication) {
             from components.java
@@ -40,3 +70,5 @@ publishing {
         }
     }
 }
+
+
