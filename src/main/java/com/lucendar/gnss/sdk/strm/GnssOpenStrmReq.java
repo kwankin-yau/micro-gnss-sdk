@@ -1,16 +1,27 @@
 package com.lucendar.gnss.sdk.strm;
 
+import com.lucendar.strm.common.StreamingApi;
 import com.lucendar.strm.common.strm.AudioConfig;
 import com.lucendar.strm.common.strm.OpenStrmReq;
 import com.lucendar.strm.common.strm.ServerHint;
 
 public interface GnssOpenStrmReq {
+
+    int PROTO__HTTP_FLV = StreamingApi.STRM_FORMAT__FLV;
+    int PROTO__RTMP = StreamingApi.STRM_FORMAT__RTMP;
+    int PROTO__HLS = StreamingApi.STRM_FORMAT__HLS;
+    int PROTO__RTSP = StreamingApi.STRM_FORMAT__RTSP;
+
+    String SUB_PROTO__FMP4 = StreamingApi.STRM_SUB_FORMAT__FMP4;
+    String SUB_PROTO__MPEGTS = StreamingApi.STRM_SUB_FORMAT__MPEGTS;
+
     String getReqId();
     boolean isAsync();
     boolean isLiveReq();
     String getSimNo();
     byte getChannel();
     int getProto();
+    String getSubProto();
     byte getConnIdx();
 //    boolean isDisableAudio();
     ServerHint getStrmServerHint();
@@ -45,6 +56,7 @@ public interface GnssOpenStrmReq {
     Integer getKeepInterval();
     Integer getTalkSendProtoVer();
 
+    AudioConfig getInputAudioCfg();
     AudioConfig getAudioCfg();
     OpenStrmReq.RtspSource getRtspSrc();
 

@@ -1,4 +1,4 @@
-package com.lucendar.gnss.sdk.types;
+package com.lucendar.gnss.sdk.evtsrc;
 
 import com.google.gson.reflect.TypeToken;
 import com.lucendar.gnss.sdk.GnssClient;
@@ -12,11 +12,14 @@ import java.util.StringJoiner;
 public class GnssEvent {
 
     private GnssEventType eventType;
+    private String eventBody;
     private StrmMediaNotif strmMediaNotif;
     private AvUploadNotif avUploadNotif;
     private TermCmdStateChanged cmdStateChanged;
-    private static final Type StrmMediaNotifType = new TypeToken<StrmMediaNotif>(){}.getType();
-    private static final Type AvUploadNotifType = new TypeToken<AvUploadNotif>(){}.getType();
+    private static final Type StrmMediaNotifType = new TypeToken<StrmMediaNotif>() {
+    }.getType();
+    private static final Type AvUploadNotifType = new TypeToken<AvUploadNotif>() {
+    }.getType();
 
 
     public GnssEventType getEventType() {
@@ -25,6 +28,14 @@ public class GnssEvent {
 
     public void setEventType(GnssEventType eventType) {
         this.eventType = eventType;
+    }
+
+    public String getEventBody() {
+        return eventBody;
+    }
+
+    public void setEventBody(String eventBody) {
+        this.eventBody = eventBody;
     }
 
     public StrmMediaNotif getStrmMediaNotif() {
@@ -54,21 +65,20 @@ public class GnssEvent {
     public static GnssEvent of(GnssEventType evtTyp, String eventBody) {
         GnssEvent r = new GnssEvent();
         r.setEventType(evtTyp);
-        
-        switch (evtTyp) {
-            case cmd -> {
-                r.cmdStateChanged = GnssClient.GSON.fromJson(eventBody, TermCmdStateChanged.TYPE);
-            }
-            case av_upload -> {
-                r.avUploadNotif = GnssClient.GSON.fromJson(eventBody, AvUploadNotifType);
-            }
-            case strm -> {
-                r.strmMediaNotif = GnssClient.GSON.fromJson(eventBody, StrmMediaNotifType);
-            }
-            case after_connect -> {}
 
-            default ->
-                    throw new RuntimeException("Unhandled event type: " + evtTyp);
+        switch (evtTyp) {
+            case cmd:
+                r.cmdStateChanged = GnssClient.GSON.fromJson(eventBody, TermCmdStateChanged.TYPE);
+                break;
+            case av_upload:
+                r.avUploadNotif = GnssClient.GSON.fromJson(eventBody, AvUploadNotifType);
+                break;
+            case strm:
+                r.strmMediaNotif = GnssClient.GSON.fromJson(eventBody, StrmMediaNotifType);
+                break;
+
+            default:
+                throw new RuntimeException("Unhandled event type: " + evtTyp);
         }
 
         return r;

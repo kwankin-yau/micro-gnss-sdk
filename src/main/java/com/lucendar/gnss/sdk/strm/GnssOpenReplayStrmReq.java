@@ -1,37 +1,33 @@
 package com.lucendar.gnss.sdk.strm;
 
+import com.lucendar.gnss.sdk.utils.BeijingTime;
 import com.lucendar.strm.common.strm.AudioConfig;
 import com.lucendar.strm.common.strm.OpenStrmReq;
 import com.lucendar.strm.common.strm.ServerHint;
-import info.gratour.jt808common.protocol.msg.types.cmdparams.CP_9201_ReplayAvReq;
-import info.gratour.jtcommon.BeijingTime;
+
 
 import java.util.StringJoiner;
 
 public class GnssOpenReplayStrmReq implements GnssOpenStrmReq {
 
-//    public static final int PROTO__HTTP_FLV = StreamingApi.PROTO__HTTP_FLV;
-//    public static final int PROTO__RTMP = StreamingApi.PROTO__RTMP;
-//    public static final int PROTO__HLS = StreamingApi.PROTO__HLS;
+    public static final int MEDIA_TYPE__AV = 0;
+    public static final int MEDIA_TYPE__AUDIO = 1;
+    public static final int MEDIA_TYPE__VIDEO = 2;
+    public static final int MEDIA_TYPE__A_OR_V = 3;
 
-    public static final int MEDIA_TYPE__AV = CP_9201_ReplayAvReq.MEDIA_TYPE__AV;
-    public static final int MEDIA_TYPE__AUDIO = CP_9201_ReplayAvReq.MEDIA_TYPE__AUDIO;
-    public static final int MEDIA_TYPE__VIDEO = CP_9201_ReplayAvReq.MEDIA_TYPE__VIDEO;
-    public static final int MEDIA_TYPE__A_OR_V = CP_9201_ReplayAvReq.MEDIA_TYPE__A_OR_V;
+    public static final byte CODE_STREAM__ALL = 0;
+    public static final byte CODE_STREAM__PRIMARY = 1;
+    public static final byte CODE_STREAM__SUB = 2;
 
-    public static final byte CODE_STREAM__ALL = CP_9201_ReplayAvReq.CODE_STREAM__ALL;
-    public static final byte CODE_STREAM__PRIMARY = CP_9201_ReplayAvReq.CODE_STREAM__PRIMARY;
-    public static final byte CODE_STREAM__SUB = CP_9201_ReplayAvReq.CODE_STREAM__SUB;
+    public static final byte STORAGE_TYPE__ALL = 0;
+    public static final byte STORAGE_TYPE__PRIMARY = 1;
+    public static final byte STORAGE_TYPE__SECONDARY = 2;
 
-    public static final byte STORAGE_TYPE__ALL = CP_9201_ReplayAvReq.STORAGE_TYPE__ALL;
-    public static final byte STORAGE_TYPE__PRIMARY = CP_9201_ReplayAvReq.STORAGE_TYPE__PRIMARY;
-    public static final byte STORAGE_TYPE__SECONDARY = CP_9201_ReplayAvReq.STORAGE_TYPE__SECONDARY;
-
-    public static final byte MODE__NORMAL = CP_9201_ReplayAvReq.MODE__NORMAL;
-    public static final byte MODE__FAST_FORWARD = CP_9201_ReplayAvReq.MODE__FAST_FORWARD;
-    public static final byte MODE__KEY_FRAME_BACKWARD = CP_9201_ReplayAvReq.MODE__KEY_FRAME_BACKWARD;
-    public static final byte MODE__KEY_FRAME_PLAY = CP_9201_ReplayAvReq.MODE__KEY_FRAME_PLAY;
-    public static final byte MODE__UPLOAD_SINGLE_FRAME = CP_9201_ReplayAvReq.MODE__UPLOAD_SINGLE_FRAME;
+    public static final byte MODE__NORMAL = 0;
+    public static final byte MODE__FAST_FORWARD = 1;
+    public static final byte MODE__KEY_FRAME_BACKWARD = 2;
+    public static final byte MODE__KEY_FRAME_PLAY = 3;
+    public static final byte MODE__UPLOAD_SINGLE_FRAME = 3;
 
     private String reqId;
     private boolean async = true;
@@ -45,12 +41,14 @@ public class GnssOpenReplayStrmReq implements GnssOpenStrmReq {
     private String startTime;
     private String endTime;
     private int proto;
+    private String subProto;
     private byte connIdx;
     private ServerHint strmServerHint;
     private boolean exclusive;
     private boolean saveOnServer;
     private Boolean detectMediaTyp;
     private Integer keepInterval;
+    private AudioConfig inputAudioCfg;
     private AudioConfig audioCfg;
     private OpenStrmReq.RtspSource rtspSrc;
     private String timedToken;
@@ -182,6 +180,15 @@ public class GnssOpenReplayStrmReq implements GnssOpenStrmReq {
     }
 
     @Override
+    public String getSubProto() {
+        return subProto;
+    }
+
+    public void setSubProto(String subProto) {
+        this.subProto = subProto;
+    }
+
+    @Override
     public byte getConnIdx() {
         return connIdx;
     }
@@ -247,6 +254,15 @@ public class GnssOpenReplayStrmReq implements GnssOpenStrmReq {
     }
 
     @Override
+    public AudioConfig getInputAudioCfg() {
+        return inputAudioCfg;
+    }
+
+    public void setInputAudioCfg(AudioConfig inputAudioCfg) {
+        this.inputAudioCfg = inputAudioCfg;
+    }
+
+    @Override
     public AudioConfig getAudioCfg() {
         return audioCfg;
     }
@@ -292,12 +308,14 @@ public class GnssOpenReplayStrmReq implements GnssOpenStrmReq {
                 .add("startTime='" + startTime + "'")
                 .add("endTime='" + endTime + "'")
                 .add("proto=" + proto)
+                .add("subProto='" + subProto + "'")
                 .add("connIdx=" + connIdx)
                 .add("strmServerHint=" + strmServerHint)
                 .add("exclusive=" + exclusive)
                 .add("saveOnServer=" + saveOnServer)
                 .add("detectMediaTyp=" + detectMediaTyp)
                 .add("keepInterval=" + keepInterval)
+                .add("inputAudioCfg=" + inputAudioCfg)
                 .add("audioCfg=" + audioCfg)
                 .add("rtspSrc=" + rtspSrc)
                 .add("timedToken='" + timedToken + "'")

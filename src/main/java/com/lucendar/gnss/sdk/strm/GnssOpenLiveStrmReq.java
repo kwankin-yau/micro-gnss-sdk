@@ -1,30 +1,20 @@
 package com.lucendar.gnss.sdk.strm;
 
-import com.lucendar.strm.common.StreamingApi;
 import com.lucendar.strm.common.strm.AudioConfig;
 import com.lucendar.strm.common.strm.OpenStrmReq;
 import com.lucendar.strm.common.strm.ServerHint;
-import info.gratour.jt808common.protocol.msg.types.cmdparams.CP_9101_LiveAvReq;
 
 import java.util.StringJoiner;
-import java.util.stream.Stream;
 
 public class GnssOpenLiveStrmReq implements GnssOpenStrmReq {
 
-    public static final int PROTO__HTTP_FLV = StreamingApi.STRM_FORMAT__FLV;
-    public static final int PROTO__RTMP = StreamingApi.STRM_FORMAT__RTMP;
-    public static final int PROTO__HLS = StreamingApi.STRM_FORMAT__HLS;
-    public static final int PROTO__RTSP = StreamingApi.STRM_FORMAT__RTSP;
+    public static final byte DATA_TYPE__AV = 0;
+    public static final byte DATA_TYPE__VIDEO = 1;
+    public static final byte DATA_TYPE__TALK = 2;
+    public static final byte DATA_TYPE__LISTEN = 3;
 
-    public static final byte DATA_TYPE__AV = CP_9101_LiveAvReq.DATA_TYPE__AV;
-    public static final byte DATA_TYPE__VIDEO = CP_9101_LiveAvReq.DATA_TYPE__VIDEO;
-    public static final byte DATA_TYPE__TALK = CP_9101_LiveAvReq.DATA_TYPE__TALK;
-    public static final byte DATA_TYPE__LISTEN = CP_9101_LiveAvReq.DATA_TYPE__LISTEN;
-    public static final byte DATA_TYPE__BROADCAST = CP_9101_LiveAvReq.DATA_TYPE__BROADCAST;
-    public static final byte DATA_TYPE__PASS_THOUGH = CP_9101_LiveAvReq.DATA_TYPE__PASS_THOUGH;
-
-    public static final byte CODE_STREAM__PRIMARY = CP_9101_LiveAvReq.CODE_STREAM__PRIMARY;
-    public static final byte CODE_STREAM__SUB = CP_9101_LiveAvReq.CODE_STREAM__SUB;
+    public static final byte CODE_STREAM__PRIMARY = 0;
+    public static final byte CODE_STREAM__SUB = 1;
 
     public static final int TERM_PROTO__TCP = 0;
     public static final int TERM_PROTO__UDP = 1;
@@ -36,6 +26,7 @@ public class GnssOpenLiveStrmReq implements GnssOpenStrmReq {
     private Byte dataType;
     private byte codeStream;
     private int proto;
+    private String subProto;
     private byte connIdx;
     private ServerHint strmServerHint;
     private int termProto;
@@ -44,6 +35,7 @@ public class GnssOpenLiveStrmReq implements GnssOpenStrmReq {
     private Boolean detectMediaTyp;
     private Integer keepInterval;
     private Integer talkSendProtoVer;
+    private AudioConfig inputAudioCfg;
     private AudioConfig audioCfg;
     private OpenStrmReq.RtspSource rtspSrc;
     private String timedToken;
@@ -124,6 +116,15 @@ public class GnssOpenLiveStrmReq implements GnssOpenStrmReq {
 
     public void setProto(int proto) {
         this.proto = proto;
+    }
+
+    @Override
+    public String getSubProto() {
+        return subProto;
+    }
+
+    public void setSubProto(String subProto) {
+        this.subProto = subProto;
     }
 
     @Override
@@ -217,6 +218,15 @@ public class GnssOpenLiveStrmReq implements GnssOpenStrmReq {
     }
 
     @Override
+    public AudioConfig getInputAudioCfg() {
+        return inputAudioCfg;
+    }
+
+    public void setInputAudioCfg(AudioConfig inputAudioCfg) {
+        this.inputAudioCfg = inputAudioCfg;
+    }
+
+    @Override
     public AudioConfig getAudioCfg() {
         return audioCfg;
     }
@@ -244,6 +254,7 @@ public class GnssOpenLiveStrmReq implements GnssOpenStrmReq {
                 .add("dataType=" + dataType)
                 .add("codeStream=" + codeStream)
                 .add("proto=" + proto)
+                .add("subProto='" + subProto + "'")
                 .add("connIdx=" + connIdx)
                 .add("strmServerHint=" + strmServerHint)
                 .add("termProto=" + termProto)
@@ -252,6 +263,7 @@ public class GnssOpenLiveStrmReq implements GnssOpenStrmReq {
                 .add("detectMediaTyp=" + detectMediaTyp)
                 .add("keepInterval=" + keepInterval)
                 .add("talkSendProtoVer=" + talkSendProtoVer)
+                .add("inputAudioCfg=" + inputAudioCfg)
                 .add("audioCfg=" + audioCfg)
                 .add("rtspSrc=" + rtspSrc)
                 .add("timedToken='" + timedToken + "'")

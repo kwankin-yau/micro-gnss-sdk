@@ -1,12 +1,11 @@
-package com.lucendar.gnss.sdk;
+package com.lucendar.gnss.sdk.evtsrc;
 
-import com.lucendar.gnss.sdk.types.GnssEvent;
-import com.lucendar.gnss.sdk.types.GnssEventListener;
-import com.lucendar.gnss.sdk.types.GnssEventType;
+import com.lucendar.gnss.sdk.HttpConsts;
+import com.lucendar.gnss.sdk.types.GnssApiConnParams;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
-import org.springframework.messaging.converter.GsonMessageConverter;
 import org.springframework.messaging.converter.StringMessageConverter;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompFrameHandler;
@@ -21,19 +20,18 @@ import org.springframework.web.socket.messaging.WebSocketStompClient;
 import java.lang.reflect.Type;
 import java.time.Instant;
 import java.util.List;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
-public class GnssWs extends StompSessionHandlerAdapter {
+public class WsEventSource extends StompSessionHandlerAdapter implements GnssWs {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(GnssWs.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(WsEventSource.class);
 
     /**
-     * 默认重连间隔，单位：秒
+     * 默认重连间隔，单位：毫秒
      */
-    public static final int DEFAULT_RECONNECT_INTERVAL = 10;
+    public static final int DEFAULT_RECONNECT_INTERVAL = 10_000;
 
     private final TaskScheduler taskScheduler;
 
@@ -45,8 +43,12 @@ public class GnssWs extends StompSessionHandlerAdapter {
     private final String password;
 
     private final int reconnectInterval;
-    private final GnssEventType[] subscribedEventTypes;
-    protected final ConcurrentLinkedDeque<GnssEventListener>[] listeners = new ConcurrentLinkedDeque[GnssEventType.values().length];
+
+    static class ManagedListener {
+        GnssEventListener listener;
+        AtomicBoolean afterSubscribeNotified = new AtomicBoolean();
+    }
+    private final ManagedListener[] listeners = new ManagedListener[GnssEventType.values().length];
 
     private final AtomicBoolean active = new AtomicBoolean();
     private final AtomicReference<StompSession> session = new AtomicReference<>();
@@ -59,18 +61,28 @@ public class GnssWs extends StompSessionHandlerAdapter {
         String dest = destOf(eventType.name());
         LOGGER.debug("Subscribe " + dest);
         session.subscribe(dest, new GnssStompFrameHandler(eventType));
+
+        int idx = eventType.ordinal();
+        ManagedListener l = listeners[idx];
+        if (l != null) {
+            if (l.afterSubscribeNotified.compareAndSet(false, true)) {
+                l.listener.afterSubscribed(eventType);
+            }
+        }
+
     }
 
     private void doSubscribe(StompSession session) {
-        if (subscribedEventTypes != null) {
-            for (GnssEventType typ : subscribedEventTypes) {
-                _subscribe(session, typ);
-            }
+        for (GnssEventType type : GnssEventType.values()) {
+            int idx = type.ordinal();
+            ManagedListener l = listeners[idx];
+            if (l != null)
+                _subscribe(session, type);
         }
     }
 
     @Override
-    public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
+    public void afterConnected(@NotNull StompSession session, @NotNull StompHeaders connectedHeaders) {
         doSubscribe(session);
     }
 
@@ -86,17 +98,22 @@ public class GnssWs extends StompSessionHandlerAdapter {
                         connect();
                     }
                 }
-            }, Instant.now().plusSeconds(reconnectInterval));
+            }, Instant.now().plusMillis(reconnectInterval));
         }
     }
 
     @Override
-    public void handleException(StompSession session, StompCommand command, StompHeaders headers, byte[] payload, Throwable exception) {
+    public void handleException(
+            @NotNull StompSession session,
+            StompCommand command,
+            StompHeaders headers,
+            @NotNull byte[] payload,
+            @NotNull Throwable exception) {
         onException(session, exception);
     }
 
     @Override
-    public void handleTransportError(StompSession session, Throwable exception) {
+    public void handleTransportError(@NotNull StompSession session, @NotNull Throwable exception) {
         onException(session, exception);
     }
 
@@ -108,36 +125,40 @@ public class GnssWs extends StompSessionHandlerAdapter {
         }
 
         @Override
-        public Type getPayloadType(StompHeaders headers) {
+        public Type getPayloadType(@NotNull StompHeaders headers) {
             return String.class;
         }
 
         @Override
-        public void handleFrame(StompHeaders headers, Object payload) {
+        public void handleFrame(@NotNull StompHeaders headers, Object payload) {
+            if (payload == null)
+                return;
+
+            LOGGER.debug("handleFrame: " + payload);
             String s = payload.toString();
             GnssEvent event = GnssEvent.of(eventType, s);
-            GnssWs.this.notify(event);
+            WsEventSource.this.notify(event);
         }
     }
 
 
-    public GnssWs(
+    public WsEventSource(
             TaskScheduler taskScheduler,
-            String appId,
-            String apiUrlPrefix,
+            GnssApiConnParams connParams,
             String token,
-            String username,
-            String password,
-            GnssEventType[] subscribedEventTypes,
+            GnssEventListenerReg[] listenerRegs,
             int reconnectInterval
             ) {
-        for (GnssEventType t : GnssEventType.values()) {
-            listeners[t.ordinal()] = new ConcurrentLinkedDeque<>();
+        for (GnssEventListenerReg reg : listenerRegs) {
+            GnssEventType eventType = reg.getEventType();
+            int idx = eventType.ordinal();
+            listeners[idx] = new ManagedListener();
+            listeners[idx].listener = reg.getListener();
         }
 
         this.taskScheduler = taskScheduler;
 
-        String wsUrl = apiUrlPrefix.replace("http://", "ws://")
+        String wsUrl = connParams.getApiBasePath().replace("http://", "ws://")
                 .replace("https://", "wss://");
         if (!wsUrl.endsWith("/"))
             wsUrl += "/";
@@ -146,12 +167,11 @@ public class GnssWs extends StompSessionHandlerAdapter {
         wsUrl += "ws";
         this.wsUrl = wsUrl;
 
-        this.appId = appId;
+        this.appId = connParams.getAppId();
         this.token = token;
-        this.username = username;
-        this.password = password;
+        this.username = connParams.getUsername();
+        this.password = connParams.getPassword();
         this.reconnectInterval = reconnectInterval;
-        this.subscribedEventTypes = subscribedEventTypes;
 
         StandardWebSocketClient client = new StandardWebSocketClient();
         stompClient = new WebSocketStompClient(client);
@@ -159,52 +179,34 @@ public class GnssWs extends StompSessionHandlerAdapter {
         stompClient.setTaskScheduler(taskScheduler);
     }
 
-    public GnssWs(
+    public WsEventSource(
             TaskScheduler taskScheduler,
-            String appId,
-            String apiUrlPrefix,
+            GnssApiConnParams connParams,
             String token,
-            String username,
-            String password,
-            GnssEventType[] subscribedEventTypes) {
+            GnssEventListenerReg[] listenerRegs) {
         this(taskScheduler,
-                appId,
-                apiUrlPrefix,
+                connParams,
                 token,
-                username,
-                password,
-                subscribedEventTypes,
+                listenerRegs,
                 DEFAULT_RECONNECT_INTERVAL);
     }
 
-    public GnssWs(
-            TaskScheduler taskScheduler,
-            String appId,
-            String apiUrlPrefix,
-            String token,
-            String username,
-            String password) {
-        this(taskScheduler, appId, apiUrlPrefix, token, username, password, GnssEventType.values());
-    }
     protected void notify(GnssEvent event) {
         LOGGER.debug("notify " + event);
-        ConcurrentLinkedDeque<GnssEventListener> queue = listeners[event.getEventType().ordinal()];
-
-        for (GnssEventListener l : queue) {
-            try {
-                l.on(event);
-            } catch (Throwable t) {
-                LOGGER.error("Error occurred when notify event: " + event + " to " + l, t);
+        for (ManagedListener l : listeners) {
+            if (l != null) {
+                try {
+                    l.listener.onEvent(event);
+                } catch (Throwable t) {
+                    LOGGER.error("Error occurred when notify event: " + event + " to " + l, t);
+                }
             }
         }
     }
 
-    public void addListener(GnssEventType eventType, GnssEventListener listener) {
-        listeners[eventType.ordinal()].add(listener);
-    }
-
-    public void removeListener(GnssEventType eventType, GnssEventListener listener) {
-        listeners[eventType.ordinal()].remove(listener);
+    @Override
+    public void cancel() {
+        stompClient.stop();
     }
 
     /**
@@ -215,7 +217,7 @@ public class GnssWs extends StompSessionHandlerAdapter {
      */
     static class Headers extends WebSocketHttpHeaders {
         @Override
-        public void forEach(BiConsumer<? super String, ? super List<String>> action) {
+        public void forEach(@NotNull BiConsumer<? super String, ? super List<String>> action) {
             try {
                 var f = WebSocketHttpHeaders.class.getDeclaredField("headers");
                 f.setAccessible(true);
@@ -229,17 +231,12 @@ public class GnssWs extends StompSessionHandlerAdapter {
 
     protected void connect() {
         Headers headers = new Headers();
-        headers.add(GnssClient.HEADER_APP_ID, appId);
-        headers.add(GnssClient.HEADER_X_AUTH_TOKEN, token);
+        headers.add(HttpConsts.HEADER_X_APP_ID, appId);
+        headers.add(HttpConsts.HEADER_X_AUTH_TOKEN, token);
         headers.add("login", username);
         headers.add("passcode", password);
 
-        stompClient.connectAsync(wsUrl, headers, this)
-                .thenAccept(sess -> {
-                    LOGGER.debug("Websocket session created: " + sess);
-                    this.session.set(sess);
-                    notify(GnssEvent.of(GnssEventType.after_connect, null));
-                });
+        stompClient.connect(wsUrl, headers, this);
     }
 
     protected void disconnect() {
@@ -251,14 +248,17 @@ public class GnssWs extends StompSessionHandlerAdapter {
         }
     }
 
+    @Override
     public boolean isConnected() {
         return session.get() != null;
     }
 
+    @Override
     public boolean isActive() {
         return active.get();
     }
 
+    @Override
     public void open() {
         if (active.compareAndSet(false, true)) {
             LOGGER.debug("open()");
@@ -266,6 +266,7 @@ public class GnssWs extends StompSessionHandlerAdapter {
         }
     }
 
+    @Override
     public void close() {
         if (active.compareAndSet(true, false)) {
             LOGGER.debug("close()");
@@ -274,7 +275,7 @@ public class GnssWs extends StompSessionHandlerAdapter {
     }
 
     @Override
-    public void handleFrame(StompHeaders headers, Object payload) {
+    public void handleFrame(@NotNull StompHeaders headers, Object payload) {
         super.handleFrame(headers, payload);
         LOGGER.debug("Received frame: " + payload);
     }

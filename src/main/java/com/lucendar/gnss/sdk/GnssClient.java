@@ -2,16 +2,16 @@ package com.lucendar.gnss.sdk;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.lucendar.gnss.sdk.session.LoginReq;
-import com.lucendar.gnss.sdk.session.LoginResult;
+import com.lucendar.gnss.sdk.session.GnssLoginReq;
+import com.lucendar.gnss.sdk.session.GnssLoginResult;
 import com.lucendar.gnss.sdk.strm.GnssOpenLiveStrmReq;
 import com.lucendar.gnss.sdk.strm.GnssOpenReplayStrmReq;
 import com.lucendar.gnss.sdk.strm.GnssOpenStrmResult;
+import com.lucendar.gnss.sdk.types.GnssApiConnParams;
 import com.lucendar.strm.common.strm.LiveStrmCtrlReq;
 import com.lucendar.strm.common.strm.ReleaseStrmsReq;
 import com.lucendar.strm.common.strm.ReplayStrmCtrlReq;
 import info.gratour.common.error.ErrorWithCode;
-import info.gratour.common.types.rest.RawReply;
 import info.gratour.common.types.rest.Reply;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -28,17 +28,16 @@ import org.springframework.http.HttpHeaders;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Base64;
 import java.util.UUID;
 
+import static com.lucendar.gnss.sdk.HttpConsts.HEADER_X_APP_ID;
+import static com.lucendar.gnss.sdk.HttpConsts.HEADER_X_AUTH_TOKEN;
+import static info.gratour.common.types.rest.Reply.RAW_REPLY_TYPE;
+
 public class GnssClient {
 
-    public static final String HEADER_X_AUTH_TOKEN = "X-Auth-Token";
-    public static final String PARAM_TOKEN = "__token";
-    public static final String HEADER_APP_ID = "__app_id";
-    public static final String PARAM_APP_ID = "__app_id";
 
     public static final Logger LOGGER = LoggerFactory.getLogger(GnssClient.class);
 
@@ -69,46 +68,27 @@ public class GnssClient {
     }
 
     protected final OkHttpClient httpClient;
-    protected String appId;
-    protected String username;
-    protected String password;
     protected String token;
+    protected final GnssApiConnParams connParams;
 
-    protected final String apiUrlPrefix;
+    protected final String authHeaderValue;
 
     /**
-     * @param appId
-     * @param apiUrlPrefix
-     * @param username
-     * @param password
+     * @param connParams
      * @param logging      whether logging the http call
      */
     public GnssClient(
-            String appId,
-            String apiUrlPrefix,
-            String username,
-            String password,
+            GnssApiConnParams connParams,
             boolean logging) {
 
-        this.appId = appId;
-
-        // remove the last `/`
-        if (apiUrlPrefix.endsWith("/"))
-            this.apiUrlPrefix = apiUrlPrefix.substring(0, apiUrlPrefix.length() - 1);
-        else
-            this.apiUrlPrefix = apiUrlPrefix;
-        this.username = username;
-        this.password = password;
+        this.connParams = connParams;
 
         httpClient = createHttpClient(logging);
+        authHeaderValue = connParams.authorizationHeaderValue();
     }
 
-    public String getAppId() {
-        return appId;
-    }
-
-    public void setAppId(String appId) {
-        this.appId = appId;
+    public GnssApiConnParams getConnParams() {
+        return connParams;
     }
 
     public String getToken() {
@@ -119,13 +99,17 @@ public class GnssClient {
         this.token = token;
     }
 
-    protected <T extends RawReply> T makeCall(String endPoint, Request request, Type responseType, boolean checkResp) {
+    public OkHttpClient getHttpClient() {
+        return httpClient;
+    }
+
+    protected <T extends Reply<?>> T makeCall(String endPoint, Request request, Type responseType, boolean checkResp) {
         try (Response resp = httpClient.newCall(request).execute()) {
             ResponseBody body = resp.body();
             if (body != null) {
                 int httpCategory = resp.code() / 100;
 
-                // TODO: what about status code category is 300?
+                // TODO: what about status code category is 3xx?
                 if (httpCategory != 2) {
                     String message = "API `%s` call return status: %d.";
                     message = String.format(message, endPoint, resp.code());
@@ -150,17 +134,17 @@ public class GnssClient {
 
     protected Request buildRequest(String endPoint, String method, RequestBody body) {
         Request.Builder builder = new Request.Builder()
-                .url(apiUrlPrefix + endPoint)
+                .url(connParams.getApiBasePath() + endPoint)
                 .header(
                         HttpHeaders.AUTHORIZATION,
-                        "Basic " + HttpHeaders.encodeBasicAuth(username, password, StandardCharsets.UTF_8)
+                        authHeaderValue
                 );
 
         if (token != null)
             builder.header(HEADER_X_AUTH_TOKEN, token);
 
-        if (appId != null)
-            builder.header(HEADER_APP_ID, appId);
+        if (connParams.getAppId() != null)
+            builder.header(HEADER_X_APP_ID, connParams.getAppId());
 
         if (body == null &&
                 (method.equalsIgnoreCase("POST") || (method.equalsIgnoreCase("PUT")))
@@ -172,7 +156,7 @@ public class GnssClient {
         return r;
     }
 
-    protected <T extends RawReply> T callWithoutBody(
+    protected <T extends Reply<?>> T callWithoutBody(
             String endPoint,
             Type responseType,
             String method,
@@ -181,7 +165,7 @@ public class GnssClient {
         return makeCall(endPoint, request, responseType, checkResp);
     }
 
-    protected <T extends RawReply> T callWithBody(
+    protected <T extends Reply<?>> T callWithBody(
             String endPoint,
             Object reqBody,
             Type responseType,
@@ -193,63 +177,63 @@ public class GnssClient {
         return makeCall(endPoint, request, responseType, checkResp);
     }
 
-    protected <T extends RawReply> T postWithBody(String endPoint, Object reqBody, Type responseType, boolean checkResp) {
+    protected <T extends Reply<?>> T postWithBody(String endPoint, Object reqBody, Type responseType, boolean checkResp) {
         return callWithBody(endPoint, reqBody, responseType, "POST", checkResp);
     }
 
-    protected <T extends RawReply> T postWithBody(String endPoint, Object reqBody, Type responseType) {
+    protected <T extends Reply<?>> T postWithBody(String endPoint, Object reqBody, Type responseType) {
         return postWithBody(endPoint, reqBody, responseType, true);
     }
 
-    protected <T extends RawReply> T putWithBody(String endPoint, Object reqBody, Type responseType, boolean checkResp) {
+    protected <T extends Reply<?>> T putWithBody(String endPoint, Object reqBody, Type responseType, boolean checkResp) {
         return callWithBody(endPoint, reqBody, responseType, "PUT", checkResp);
     }
 
-    protected <T extends RawReply> T putWithBody(String endPoint, Object reqBody, Type responseType) {
+    protected <T extends Reply<?>> T putWithBody(String endPoint, Object reqBody, Type responseType) {
         return putWithBody(endPoint, reqBody, responseType, true);
     }
 
-    protected RawReply postReturnRawReply(String endPoint, Object reqBody, boolean checkResp) {
-        return postWithBody(endPoint, reqBody, RawReply.TYPE, checkResp);
+    protected Reply<Void> postReturnRawReply(String endPoint, Object reqBody, boolean checkResp) {
+        return postWithBody(endPoint, reqBody, RAW_REPLY_TYPE, checkResp);
     }
 
-    protected RawReply postReturnRawReply(String endPoint, Object reqBody) {
+    protected Reply<Void> postReturnRawReply(String endPoint, Object reqBody) {
         return postReturnRawReply(endPoint, reqBody, true);
     }
 
-    protected RawReply postWithoutBodyReturnRawReply(String endPoint, boolean checkResp) {
-        return callWithoutBody(endPoint, RawReply.TYPE, "POST", checkResp);
+    protected Reply<Void> postWithoutBodyReturnRawReply(String endPoint, boolean checkResp) {
+        return callWithoutBody(endPoint, RAW_REPLY_TYPE, "POST", checkResp);
     }
 
-    protected RawReply postWithoutBodyReturnRawReply(String endPoint) {
+    protected Reply<Void> postWithoutBodyReturnRawReply(String endPoint) {
         return postWithoutBodyReturnRawReply(endPoint, true);
     }
 
-    protected RawReply putReturnRawReply(String endPoint, Object reqBody) {
-        return putWithBody(endPoint, reqBody, RawReply.TYPE, true);
+    protected Reply<Void> putReturnRawReply(String endPoint, Object reqBody) {
+        return putWithBody(endPoint, reqBody, RAW_REPLY_TYPE, true);
     }
 
-    protected <T extends RawReply> T postWithoutBody(
+    protected <T extends Reply<?>> T postWithoutBody(
             String endPoint,
             Type responseType,
             boolean checkResp) {
         return callWithoutBody(endPoint, responseType, "POST", checkResp);
     }
 
-    protected <T extends RawReply> T postWithoutBody(
+    protected <T extends Reply<?>> T postWithoutBody(
             String endPoint,
             Type responseType) {
         return postWithoutBody(endPoint, responseType, true);
     }
 
-    protected <T extends RawReply> T putWithoutBody(
+    protected <T extends Reply<?>> T putWithoutBody(
             String endPoint,
             Type responseType,
             boolean checkResp) {
         return callWithoutBody(endPoint, responseType, "PUT", checkResp);
     }
 
-    protected <T extends RawReply> T putWithoutBody(
+    protected <T extends Reply<?>> T putWithoutBody(
             String endPoint,
             Type responseType) {
         return putWithoutBody(endPoint, responseType, true);
@@ -260,16 +244,16 @@ public class GnssClient {
      *
      * @return 登录结果。
      */
-    public LoginResult login() {
-        LoginReq req = new LoginReq();
-        req.setAppId(appId);
-        req.setUserName(username);
-        req.setPassword(password);
+    public GnssLoginResult login() {
+        GnssLoginReq req = new GnssLoginReq();
+        req.setAppId(connParams.getAppId());
+        req.setUserName(connParams.getUsername());
+        req.setPassword(connParams.getPassword());
         if (token != null)
             req.setToken(token);
 
-        Reply<LoginResult> reply = postWithBody("/login", req, LoginResult.REPLY_TYPE);
-        LoginResult r = reply.first();
+        Reply<GnssLoginResult> reply = postWithBody("/login", req, GnssLoginResult.REPLY_TYPE);
+        GnssLoginResult r = reply.first();
 
         if (token == null)
             token = r.getAuthToken();
@@ -310,7 +294,7 @@ public class GnssClient {
      * @param req 实时音视频控制请求。
      * @return 请求响应。
      */
-    public RawReply liveCtrl(LiveStrmCtrlReq req) {
+    public Reply<Void> liveCtrl(LiveStrmCtrlReq req) {
         return postReturnRawReply("/strm/live/ctrl", req);
     }
 
@@ -331,7 +315,7 @@ public class GnssClient {
      * @param req 远程录像回放控制请求。
      * @return 请求响应。
      */
-    public RawReply replayCtrl(ReplayStrmCtrlReq req) {
+    public Reply<Void> replayCtrl(ReplayStrmCtrlReq req) {
         return postReturnRawReply("/strm/replay/ctrl", req);
     }
 

@@ -2,11 +2,21 @@ package com.lucendar.gnss.sdk.session;
 
 import java.util.StringJoiner;
 
-public class LoginReq {
+public class GnssLoginReq {
     private String appId;
     private String userName;
     private String password;
     private String token;
+
+    public GnssLoginReq() {
+    }
+
+    public GnssLoginReq(String appId, String userName, String password, String token) {
+        this.appId = appId;
+        this.userName = userName;
+        this.password = password;
+        this.token = token;
+    }
 
     public String getAppId() {
         return appId;
@@ -42,7 +52,7 @@ public class LoginReq {
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", LoginReq.class.getSimpleName() + "[", "]")
+        return new StringJoiner(", ", GnssLoginReq.class.getSimpleName() + "[", "]")
                 .add("appId='" + appId + "'")
                 .add("userName='" + userName + "'")
                 .add("password='" + password + "'")

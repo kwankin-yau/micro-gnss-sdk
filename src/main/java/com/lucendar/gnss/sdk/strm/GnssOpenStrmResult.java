@@ -22,7 +22,15 @@ public class GnssOpenStrmResult {
     private Boolean ctrl;
     private boolean ready;
     private String playUrl;
+
+    /**
+     * WebSocket地址，用于对讲时客户端提交音频数据。此地址使用stomp协议。仅当请求的流类型为实时流，且数据类型(`dataTyp`)为`2: 对讲`时有效。
+     */
     private String wsUrl;
+
+    /**
+     * WebSocket地址，用于对讲时客户端提交音频数据。此地址使用二进制websocket协议。仅当请求的流类型为实时流，且数据类型(`dataTyp`)为`2: 对讲`时有效。
+     */
     private String taUrl;
     private String mediaTyp;
 
