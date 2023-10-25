@@ -1,3 +1,7 @@
+# 3.4.3
+## Improvement
+- Merge `gnss-spi` into this module
+
 # 3.4.2
 ## Improvement
 - Add android support

@@ -7,13 +7,13 @@ import com.lucendar.strm.common.strm.ServerHint;
 
 public interface GnssOpenStrmReq {
 
-    int PROTO__HTTP_FLV = StreamingApi.STRM_FORMAT__FLV;
-    int PROTO__RTMP = StreamingApi.STRM_FORMAT__RTMP;
-    int PROTO__HLS = StreamingApi.STRM_FORMAT__HLS;
-    int PROTO__RTSP = StreamingApi.STRM_FORMAT__RTSP;
+    int FORMAT__HTTP_FLV = StreamingApi.STRM_FORMAT__FLV;
+    int FORMAT__RTMP = StreamingApi.STRM_FORMAT__RTMP;
+    int FORMAT__HLS = StreamingApi.STRM_FORMAT__HLS;
+    int FORMAT__RTSP = StreamingApi.STRM_FORMAT__RTSP;
 
-    String SUB_PROTO__FMP4 = StreamingApi.STRM_SUB_FORMAT__FMP4;
-    String SUB_PROTO__MPEGTS = StreamingApi.STRM_SUB_FORMAT__MPEGTS;
+    String SUB_FORMAT__FMP4 = StreamingApi.STRM_SUB_FORMAT__FMP4;
+    String SUB_FORMAT__MPEGTS = StreamingApi.STRM_SUB_FORMAT__MPEGTS;
 
     String getReqId();
     boolean isAsync();
