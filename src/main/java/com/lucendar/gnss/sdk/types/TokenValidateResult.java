@@ -1,6 +1,7 @@
 package com.lucendar.gnss.sdk.types;
 
 import com.google.gson.reflect.TypeToken;
+import com.lucendar.strm.common.StreamingApi;
 
 import java.lang.reflect.Type;
 import java.util.StringJoiner;
@@ -11,6 +12,14 @@ public class TokenValidateResult {
 
     private String appId;
     private String userName;
+
+    public TokenValidateResult() {
+    }
+
+    public TokenValidateResult(String appId, String userName) {
+        this.appId = appId;
+        this.userName = userName;
+    }
 
     public String getAppId() {
         return appId;
@@ -26,6 +35,13 @@ public class TokenValidateResult {
 
     public void setUserName(String userName) {
         this.userName = userName;
+    }
+
+    public String appIdDef() {
+        if (appId != null)
+            return appId;
+
+        return StreamingApi.DEFAULT_APP_ID;
     }
 
     @Override

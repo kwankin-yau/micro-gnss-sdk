@@ -6,6 +6,9 @@ plugins {
 group 'com.lucendar.gnss'
 version '3.4.3-SNAPSHOT'
 
+sourceCompatibility = 17
+targetCompatibility = 17
+
 compileJava.options.encoding = 'UTF-8'
 
 repositories {
@@ -20,14 +23,17 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
     implementation("org.slf4j:slf4j-api:2.0.7")
 
+    implementation("org.springframework:spring-webmvc:6.0.10")
     implementation("org.springframework:spring-websocket:6.0.10")
     implementation("org.springframework:spring-messaging:6.0.10")
 
 
+    compileOnly 'jakarta.servlet:jakarta.servlet-api:6.0.0'
+
+
     implementation("com.lucendar.common:lucendar-common:1.0.0-SNAPSHOT")
-    implementation("info.gratour.common:gratour-common:3.3.0-SNAPSHOT")
-    implementation("info.gratour.gnss:jt808-common:2.0.3-SNAPSHOT")
-    implementation("com.lucendar.strm:strm-sdk:3.4.2-SNAPSHOT")
+    implementation("info.gratour.gnss:jt808-common:2.0.4-SNAPSHOT")
+    implementation("com.lucendar.strm:strm-sdk:3.4.3-SNAPSHOT")
     implementation("com.lucendar.common:stomp-lib:1.0.0-SNAPSHOT")
 
 

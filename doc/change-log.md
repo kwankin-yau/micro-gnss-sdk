@@ -1,6 +1,11 @@
 # 3.4.3
 ## Improvement
 - Merge `gnss-spi` into this module
+- Add the following properties to `GnssOpenLiveStrmReq` and `GnssOpenReplayStrmReq`:
+  - `trace`
+  - `scheme`
+  - `dontSendCloseIfInterrupt`
+- Add `CommLog` class and `StrmReq` class.
 
 # 3.4.2
 ## Improvement

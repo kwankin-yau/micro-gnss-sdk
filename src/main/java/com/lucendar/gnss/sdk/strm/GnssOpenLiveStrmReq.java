@@ -1,5 +1,6 @@
 package com.lucendar.gnss.sdk.strm;
 
+import com.lucendar.gnss.sdk.GnssConsts;
 import com.lucendar.strm.common.strm.AudioConfig;
 import com.lucendar.strm.common.strm.OpenStrmReq;
 import com.lucendar.strm.common.strm.ServerHint;
@@ -21,6 +22,7 @@ public class GnssOpenLiveStrmReq implements GnssOpenStrmReq {
 
     private String reqId;
     private boolean async = true;
+    private String appId = GnssConsts.DEFAULT_APP_ID;
     private String simNo;
     private byte channel;
     private Byte dataType;
@@ -39,6 +41,9 @@ public class GnssOpenLiveStrmReq implements GnssOpenStrmReq {
     private AudioConfig audioCfg;
     private OpenStrmReq.RtspSource rtspSrc;
     private String timedToken;
+    private Integer trace;
+    private String scheme;
+    private Boolean dontSendCloseIfInterrupt;
 
     @Override
     public String getReqId() {
@@ -61,6 +66,15 @@ public class GnssOpenLiveStrmReq implements GnssOpenStrmReq {
     @Override
     public boolean isLiveReq() {
         return true;
+    }
+
+    @Override
+    public String getAppId() {
+        return appId;
+    }
+
+    public void setAppId(String appId) {
+        this.appId = appId;
     }
 
     @Override
@@ -245,10 +259,38 @@ public class GnssOpenLiveStrmReq implements GnssOpenStrmReq {
     }
 
     @Override
+    public Integer getTrace() {
+        return trace;
+    }
+
+    public void setTrace(Integer trace) {
+        this.trace = trace;
+    }
+
+    @Override
+    public String getScheme() {
+        return scheme;
+    }
+
+    public void setScheme(String scheme) {
+        this.scheme = scheme;
+    }
+
+    @Override
+    public Boolean getDontSendCloseIfInterrupt() {
+        return dontSendCloseIfInterrupt;
+    }
+
+    public void setDontSendCloseIfInterrupt(Boolean dontSendCloseIfInterrupt) {
+        this.dontSendCloseIfInterrupt = dontSendCloseIfInterrupt;
+    }
+
+    @Override
     public String toString() {
         return new StringJoiner(", ", GnssOpenLiveStrmReq.class.getSimpleName() + "[", "]")
                 .add("reqId='" + reqId + "'")
                 .add("async=" + async)
+                .add("appId='" + appId + "'")
                 .add("simNo='" + simNo + "'")
                 .add("channel=" + channel)
                 .add("dataType=" + dataType)
@@ -267,6 +309,9 @@ public class GnssOpenLiveStrmReq implements GnssOpenStrmReq {
                 .add("audioCfg=" + audioCfg)
                 .add("rtspSrc=" + rtspSrc)
                 .add("timedToken='" + timedToken + "'")
+                .add("trace=" + trace)
+                .add("scheme='" + scheme + "'")
+                .add("dontSendCloseIfInterrupt=" + dontSendCloseIfInterrupt)
                 .toString();
     }
 }
