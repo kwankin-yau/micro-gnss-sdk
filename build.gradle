@@ -3,8 +3,8 @@ plugins {
     id 'maven-publish'
 }
 
-group 'com.lucendar.gnss'
-version '3.4.3-SNAPSHOT'
+group 'com.lucendar'
+version '3.4.4-SNAPSHOT'
 
 sourceCompatibility = 17
 targetCompatibility = 17
@@ -17,6 +17,7 @@ repositories {
 }
 
 dependencies {
+    implementation 'org.checkerframework:checker-qual:3.36.0'
     implementation('com.google.code.gson:gson:2.10.1')
     implementation("com.squareup.okhttp3:okhttp:4.11.0")
     implementation("com.squareup.okhttp3:okhttp-sse:4.11.0")
@@ -31,10 +32,10 @@ dependencies {
     compileOnly 'jakarta.servlet:jakarta.servlet-api:6.0.0'
 
 
-    implementation("com.lucendar.common:lucendar-common:1.0.0-SNAPSHOT")
-    implementation("info.gratour.gnss:jt808-common:2.0.4-SNAPSHOT")
-    implementation("com.lucendar.strm:strm-sdk:3.4.3-SNAPSHOT")
-    implementation("com.lucendar.common:stomp-lib:1.0.0-SNAPSHOT")
+    implementation("com.lucendar:lucendar-common:2.0.0-SNAPSHOT")
+    implementation("com.lucendar:jt808-common:3.0.0-SNAPSHOT")
+    implementation("com.lucendar:strm-sdk:3.4.4-SNAPSHOT")
+//    implementation("com.lucendar.common:stomp-lib:1.0.0-SNAPSHOT")
 
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'

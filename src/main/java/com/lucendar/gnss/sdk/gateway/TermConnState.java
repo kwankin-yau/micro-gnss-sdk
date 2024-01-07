@@ -7,11 +7,21 @@
  *******************************************************************************/
 package com.lucendar.gnss.sdk.gateway;
 
+import com.lucendar.strm.common.StreamingApi;
 import info.gratour.jt808common.protocol.msg.types.trk.Trk;
+import org.springframework.lang.Nullable;
 
 import java.util.StringJoiner;
 
+/**
+ * 终端最新状态
+ */
 public class TermConnState {
+
+    /**
+     * 所属 appId
+     */
+    private String appId;
 
     /**
      * 终端识别号
@@ -64,7 +74,16 @@ public class TermConnState {
     /**
      * 轨迹对象
      */
+    @Nullable
     private Trk latestTrk;
+
+    public String getAppId() {
+        return appId;
+    }
+
+    public void setAppId(String appId) {
+        this.appId = appId;
+    }
 
     public String getSimNo() {
         return simNo;
@@ -161,9 +180,17 @@ public class TermConnState {
         }
     }
 
+    public String appIdDef() {
+        if (appId != null)
+            return appId;
+        else
+            return StreamingApi.DEFAULT_APP_ID;
+    }
+
     @Override
     public String toString() {
         return new StringJoiner(", ", TermConnState.class.getSimpleName() + "[", "]")
+                .add("appId='" + appId + "'")
                 .add("simNo='" + simNo + "'")
                 .add("connTimes=" + connTimes)
                 .add("connAt=" + connAt)

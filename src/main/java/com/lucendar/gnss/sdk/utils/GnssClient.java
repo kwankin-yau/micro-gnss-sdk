@@ -1,4 +1,4 @@
-package com.lucendar.gnss.sdk;
+package com.lucendar.gnss.sdk.utils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -8,6 +8,9 @@ import com.lucendar.gnss.sdk.strm.GnssOpenLiveStrmReq;
 import com.lucendar.gnss.sdk.strm.GnssOpenReplayStrmReq;
 import com.lucendar.gnss.sdk.strm.GnssOpenStrmResult;
 import com.lucendar.gnss.sdk.types.GnssApiConnParams;
+import com.lucendar.gnss.sdk.types.ReplyTypes;
+import com.lucendar.strm.common.strm.KeepStrmReq;
+import com.lucendar.strm.common.strm.KeepStrmReqResult;
 import com.lucendar.strm.common.strm.LiveStrmCtrlReq;
 import com.lucendar.strm.common.strm.ReleaseStrmsReq;
 import com.lucendar.strm.common.strm.ReplayStrmCtrlReq;
@@ -27,10 +30,7 @@ import org.springframework.http.HttpHeaders;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.nio.ByteBuffer;
 import java.time.Duration;
-import java.util.Base64;
-import java.util.UUID;
 
 import static com.lucendar.gnss.sdk.HttpConsts.HEADER_X_APP_ID;
 import static com.lucendar.gnss.sdk.HttpConsts.HEADER_X_AUTH_TOKEN;
@@ -249,8 +249,6 @@ public class GnssClient {
         req.setAppId(connParams.getAppId());
         req.setUserName(connParams.getUsername());
         req.setPassword(connParams.getPassword());
-        if (token != null)
-            req.setToken(token);
 
         Reply<GnssLoginResult> reply = postWithBody("/login", req, GnssLoginResult.REPLY_TYPE);
         GnssLoginResult r = reply.first();
@@ -320,6 +318,21 @@ public class GnssClient {
     }
 
     /**
+     * 保持流。
+     *
+     * @param req 保持流请求体。
+     * @return 请求响应。
+     */
+    public Reply<KeepStrmReqResult> keep(KeepStrmReq req) {
+        return postWithBody("/strm/keep", req, ReplyTypes.REPLY_TYPE__KEEP_STRM_RESULT);
+    }
+
+    public Reply<KeepStrmReqResult> keep(String reqId) {
+        KeepStrmReq req = new KeepStrmReq(reqId);
+        return keep(req);
+    }
+
+    /**
      * 关闭媒体请求。
      *
      * @param req 关闭媒体请求对象。
@@ -342,20 +355,6 @@ public class GnssClient {
         r.setReqIds(new String[]{reqId});
 
         closeStrms(r);
-    }
-
-    /**
-     * 创建一个令牌。
-     *
-     * @return 新的令牌字符串。
-     */
-    public static String newToken() {
-        byte[] bytes = new byte[16];
-        ByteBuffer bb = ByteBuffer.wrap(bytes);
-        UUID uuid = UUID.randomUUID();
-        bb.putLong(uuid.getMostSignificantBits());
-        bb.putLong(uuid.getLeastSignificantBits());
-        return Base64.getUrlEncoder().encodeToString(bytes);
     }
 
 }

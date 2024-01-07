@@ -1,38 +1,15 @@
-package com.lucendar.gnss.sdk.session;
+package com.lucendar.gnss.sdk.gateway;
 
-import com.google.gson.reflect.TypeToken;
-import info.gratour.common.types.rest.Reply;
-import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.StringJoiner;
 
-public class GnssLoginResult {
-    public static final Type REPLY_TYPE = new TypeToken<Reply<GnssLoginResult>>(){}.getType();
-    private String authToken;
+public class ServerInfo {
     private String ver;
+    private long startTm;
     private String instance;
     private String[] features;
     private Map<String, String> config;
-
-    public GnssLoginResult() {
-    }
-
-    public GnssLoginResult(String authToken, String ver, String instance, String[] features, Map<String, String> config) {
-        this.authToken = authToken;
-        this.ver = ver;
-        this.instance = instance;
-        this.features = features;
-        this.config = config;
-    }
-
-    public String getAuthToken() {
-        return authToken;
-    }
-
-    public void setAuthToken(String authToken) {
-        this.authToken = authToken;
-    }
 
     public String getVer() {
         return ver;
@@ -40,6 +17,14 @@ public class GnssLoginResult {
 
     public void setVer(String ver) {
         this.ver = ver;
+    }
+
+    public long getStartTm() {
+        return startTm;
+    }
+
+    public void setStartTm(long startTm) {
+        this.startTm = startTm;
     }
 
     public String getInstance() {
@@ -68,9 +53,9 @@ public class GnssLoginResult {
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", GnssLoginResult.class.getSimpleName() + "[", "]")
-                .add("authToken='" + authToken + "'")
+        return new StringJoiner(", ", ServerInfo.class.getSimpleName() + "[", "]")
                 .add("ver='" + ver + "'")
+                .add("startTm=" + startTm)
                 .add("instance='" + instance + "'")
                 .add("features=" + Arrays.toString(features))
                 .add("config=" + config)

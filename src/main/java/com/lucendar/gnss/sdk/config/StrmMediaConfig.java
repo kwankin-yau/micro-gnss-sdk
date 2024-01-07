@@ -1,5 +1,8 @@
 package com.lucendar.gnss.sdk.config;
 
+import info.gratour.common.error.ErrorWithCode;
+import info.gratour.common.error.Errors;
+
 import java.util.StringJoiner;
 
 public class StrmMediaConfig implements Cloneable {
@@ -49,6 +52,23 @@ public class StrmMediaConfig implements Cloneable {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    public void validateAndSettle() {
+        if (instanceId == null || instanceId.isEmpty())
+            throw new ErrorWithCode(Errors.INVALID_CONFIG, "strm.instanceId");
+
+        if (!disabled) {
+            if (apiUrl == null || apiUrl.isEmpty())
+                throw new ErrorWithCode(Errors.INVALID_CONFIG, "strm.apiUrl");
+
+            if (username == null || username.isEmpty())
+                throw new ErrorWithCode(Errors.INVALID_CONFIG, "strm.username");
+
+            if (password == null || password.isEmpty())
+                throw new ErrorWithCode(Errors.INVALID_CONFIG, "strm.password");
+        }
+    }
+
 
     @Override
     public StrmMediaConfig clone() {

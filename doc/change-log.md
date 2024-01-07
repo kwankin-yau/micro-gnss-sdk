@@ -1,3 +1,24 @@
+# 3.4.4 [2023-11-28]
+## Improvement
+- Introduce `OnlineOfflineNotif`
+- Introduce `ServerInfo`
+- Introduce `GnssUtils`
+- `TermAvAttrsQryResultItem` add `appId`
+- Introduce `TermCmdRec`, `UuidRecIdProvider`, etc.
+- Introduce `TermAttrsQryResultItem`
+- Introduce `ApiClient`, `ApiAuthentication`, etc.
+- Introduce `QryAvUploadReq`
+- Introduce `ReplyTypes`
+
+## Changed
+- Maven group changed to `com.lucendar`
+- `WsEventSource2` removed
+
+- Dependencies
+  - Bump `lucendar-common` to 2.0.0
+  - Bump `jt808-common` to 3.0.0
+  - Bump `strm-sdk` to 3.4.4
+
 # 3.4.3
 ## Improvement
 - Merge `gnss-spi` into this module

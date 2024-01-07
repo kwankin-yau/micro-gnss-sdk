@@ -105,8 +105,8 @@ public class WsEventSource extends StompSessionHandlerAdapter implements GnssWs 
     @Override
     public void handleException(
             @NotNull StompSession session,
-            StompCommand command,
-            StompHeaders headers,
+            @NotNull StompCommand command,
+            @NotNull StompHeaders headers,
             @NotNull byte[] payload,
             @NotNull Throwable exception) {
         onException(session, exception);

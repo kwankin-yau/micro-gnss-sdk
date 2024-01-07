@@ -1,21 +1,21 @@
 package com.lucendar.gnss.sdk.session;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.StringJoiner;
 
 public class GnssLoginReq {
     private String appId;
     private String userName;
     private String password;
-    private String token;
 
     public GnssLoginReq() {
     }
 
-    public GnssLoginReq(String appId, String userName, String password, String token) {
+    public GnssLoginReq(@NotNull String appId, @NotNull String userName, @NotNull String password) {
         this.appId = appId;
         this.userName = userName;
         this.password = password;
-        this.token = token;
     }
 
     public String getAppId() {
@@ -42,21 +42,12 @@ public class GnssLoginReq {
         this.password = password;
     }
 
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
     @Override
     public String toString() {
         return new StringJoiner(", ", GnssLoginReq.class.getSimpleName() + "[", "]")
                 .add("appId='" + appId + "'")
                 .add("userName='" + userName + "'")
                 .add("password='" + password + "'")
-                .add("token='" + token + "'")
                 .toString();
     }
 }

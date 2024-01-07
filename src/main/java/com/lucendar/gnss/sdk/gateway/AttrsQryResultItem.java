@@ -2,16 +2,16 @@ package com.lucendar.gnss.sdk.gateway;
 
 import com.lucendar.strm.common.StreamingApi;
 import com.lucendar.strm.common.types.ScopedSimNo;
-import info.gratour.jt808common.protocol.msg.types.JT1078TermAvAttrs;
+import info.gratour.jt808common.protocol.msg.types.ackparams.JT808AckParams;
 
 import java.util.Objects;
 import java.util.StringJoiner;
 
-public class TermAvAttrsQryResultItem {
+public class AttrsQryResultItem<ATTRS extends JT808AckParams> {
 
     private String appId;
     private String simNo;
-    private JT1078TermAvAttrs attrs;
+    private ATTRS attrs;
 
     public String getAppId() {
         return appId;
@@ -34,11 +34,11 @@ public class TermAvAttrsQryResultItem {
         this.simNo = scopedSimNo.getSimNo();
     }
 
-    public JT1078TermAvAttrs getAttrs() {
+    public ATTRS getAttrs() {
         return attrs;
     }
 
-    public void setAttrs(JT1078TermAvAttrs attrs) {
+    public void setAttrs(ATTRS attrs) {
         this.attrs = attrs;
     }
 
@@ -48,7 +48,7 @@ public class TermAvAttrsQryResultItem {
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", TermAvAttrsQryResultItem.class.getSimpleName() + "[", "]")
+        return new StringJoiner(", ", AttrsQryResultItem.class.getSimpleName() + "[", "]")
                 .add("appId='" + appId + "'")
                 .add("simNo='" + simNo + "'")
                 .add("attrs=" + attrs)

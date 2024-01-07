@@ -49,8 +49,23 @@ public interface GnssOpenStrmReq {
     boolean isAsync();
     boolean isLiveReq();
     String getAppId();
+    default String appIdDef() {
+        String r = getAppId();
+        if (r == null)
+            return StreamingApi.DEFAULT_APP_ID;
+        else
+            return r;
+    }
+
     String getSimNo();
     byte getChannel();
+
+    /**
+     * 设置通道号。主要用于对讲时。对讲时可指定 channel = 0。此时媒体代理服务将确定实际的通道号，确定后，通过此方法设置确定后的通道号。
+     *
+     * @param channel
+     */
+    void setChannel(byte channel);
     int getProto();
     String getSubProto();
     byte getConnIdx();

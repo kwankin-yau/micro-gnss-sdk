@@ -1,6 +1,6 @@
 package com.lucendar.gnss.sdk.strm;
 
-import com.lucendar.gnss.sdk.utils.BeijingTime;
+import com.lucendar.common.utils.DateTimeUtils;
 import com.lucendar.strm.common.strm.AudioConfig;
 import com.lucendar.strm.common.strm.OpenStrmReq;
 import com.lucendar.strm.common.strm.ServerHint;
@@ -102,6 +102,7 @@ public class GnssOpenReplayStrmReq implements GnssOpenStrmReq {
         return channel;
     }
 
+    @Override
     public void setChannel(byte channel) {
         this.channel = channel;
     }
@@ -161,7 +162,7 @@ public class GnssOpenReplayStrmReq implements GnssOpenStrmReq {
 
     public Long startTimeEpoch() {
         if (startTime != null)
-            return BeijingTime.stringToMillis(startTime);
+            return DateTimeUtils.BeijingConv.stringToMillis(startTime);
         else
             return null;
     }
@@ -176,7 +177,7 @@ public class GnssOpenReplayStrmReq implements GnssOpenStrmReq {
 
     public Long endTimeEpoch() {
         if (endTime != null && !endTime.equals("00-00-00 00:00:00"))
-            return BeijingTime.stringToMillis(endTime);
+            return DateTimeUtils.BeijingConv.stringToMillis(endTime);
         else
             return null;
     }

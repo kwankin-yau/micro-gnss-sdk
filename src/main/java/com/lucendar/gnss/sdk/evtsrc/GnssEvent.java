@@ -1,7 +1,7 @@
 package com.lucendar.gnss.sdk.evtsrc;
 
 import com.google.gson.reflect.TypeToken;
-import com.lucendar.gnss.sdk.GnssClient;
+import com.lucendar.gnss.sdk.utils.GnssClient;
 import com.lucendar.strm.common.StrmMediaNotif;
 import com.lucendar.strm.common.strm.stored.AvUploadNotif;
 import info.gratour.jt808common.spi.model.TermCmdStateChanged;

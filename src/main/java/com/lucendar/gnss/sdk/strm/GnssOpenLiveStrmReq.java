@@ -91,6 +91,7 @@ public class GnssOpenLiveStrmReq implements GnssOpenStrmReq {
         return channel;
     }
 
+    @Override
     public void setChannel(byte channel) {
         this.channel = channel;
     }
