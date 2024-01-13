@@ -13,7 +13,10 @@ public class OnlineOfflineNotif {
     private String simNo;
     private boolean online;
     private long tm;
+    private Long totalConnectTimes;
     private String gwInstId;
+
+    private Integer protoVer;
 
     public String getAppId() {
         return appId;
@@ -80,6 +83,50 @@ public class OnlineOfflineNotif {
         return new ScopedSimNo(appIdDef(), simNo);
     }
 
+    public Long getTotalConnectTimes() {
+        return totalConnectTimes;
+    }
+
+    public void setTotalConnectTimes(Long totalConnectTimes) {
+        this.totalConnectTimes = totalConnectTimes;
+    }
+
+    public Integer getProtoVer() {
+        return protoVer;
+    }
+
+    public void setProtoVer(Integer protoVer) {
+        this.protoVer = protoVer;
+    }
+
+    public static OnlineOfflineNotif online(
+            String appId,
+            String simNo,
+            long tm,
+            Long totalConnectTimes,
+            Integer protoVer) {
+        OnlineOfflineNotif r = new OnlineOfflineNotif();
+        r.setAppId(appId);
+        r.setSimNo(simNo);
+        r.setOnline(true);
+        r.setTm(tm);
+        r.setTotalConnectTimes(totalConnectTimes);
+        r.setProtoVer(protoVer);
+
+        return r;
+    }
+
+    public static OnlineOfflineNotif offline(String appId, String simNo, long tm) {
+        OnlineOfflineNotif r = new OnlineOfflineNotif();
+        r.setAppId(appId);
+        r.setSimNo(simNo);
+        r.setOnline(false);
+        r.setTm(tm);
+
+        return r;
+    }
+
+
     @Override
     public String toString() {
         return new StringJoiner(", ", OnlineOfflineNotif.class.getSimpleName() + "[", "]")
@@ -87,7 +134,9 @@ public class OnlineOfflineNotif {
                 .add("simNo='" + simNo + "'")
                 .add("online=" + online)
                 .add("tm=" + tm)
+                .add("totalConnectTimes=" + totalConnectTimes)
                 .add("gwInstId='" + gwInstId + "'")
+                .add("protoVer=" + protoVer)
                 .toString();
     }
 }

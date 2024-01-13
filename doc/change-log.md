@@ -9,6 +9,7 @@
 - Introduce `ApiClient`, `ApiAuthentication`, etc.
 - Introduce `QryAvUploadReq`
 - Introduce `ReplyTypes`
+- `OnlineOfflineNotif` add `totalConnectTimes`, `protoVer`
 
 ## Changed
 - Maven group changed to `com.lucendar`
