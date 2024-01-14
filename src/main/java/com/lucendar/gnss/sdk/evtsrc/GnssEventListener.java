@@ -8,7 +8,6 @@ public interface GnssEventListener {
      *
      * @param eventType
      * @param t
-     * @return true if reconnect needed
      */
     void onFailure(GnssEventType eventType, Throwable t);
 

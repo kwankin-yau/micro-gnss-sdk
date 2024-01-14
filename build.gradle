@@ -1,10 +1,11 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
+    id 'signing'
 }
 
 group 'com.lucendar'
-version '3.4.4-SNAPSHOT'
+version '3.4.4'
 
 sourceCompatibility = 17
 targetCompatibility = 17
@@ -12,7 +13,6 @@ targetCompatibility = 17
 compileJava.options.encoding = 'UTF-8'
 
 repositories {
-    mavenLocal()
     mavenCentral()
 }
 
@@ -32,11 +32,9 @@ dependencies {
     compileOnly 'jakarta.servlet:jakarta.servlet-api:6.0.0'
 
 
-    implementation("com.lucendar:lucendar-common:2.0.0-SNAPSHOT")
-    implementation("com.lucendar:jt808-common:3.0.0-SNAPSHOT")
-    implementation("com.lucendar:strm-sdk:3.4.4-SNAPSHOT")
-//    implementation("com.lucendar.common:stomp-lib:1.0.0-SNAPSHOT")
-
+    implementation("com.lucendar:lucendar-common:2.0.0")
+    implementation("com.lucendar:jt808-common:3.0.0")
+    implementation("com.lucendar:strm-sdk:3.4.4")
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
@@ -47,35 +45,57 @@ test {
 }
 
 
-task sourceJar(type: Jar) {
-    from sourceSets.main.allSource
-    archiveClassifier = 'sources'
+java {
+    withJavadocJar()
+    withSourcesJar()
 }
 
 publishing {
-    repositories {
-        maven {
-            if (project.version.toString().endsWith("-SNAPSHOT")) {
-                name = "snapshots"
-                url = "${snapshotUrl}"
-            } else {
-                name = "releases"
-                url = "${releaseUrl}"
-            }
-
-            credentials {
-                username = "${ossUser}"
-                password = "${ossPwd}"
-            }
-        }
-    }
-
     publications {
         maven(MavenPublication) {
             from components.java
-            artifact sourceJar
+
+            pom {
+                name = 'Micro-GNSS SDK library'
+                packaging = 'jar'
+                // optionally artifactId can be defined here
+                description = 'GT-Streaming 媒体服务中间件的Micro-GNSS接口库.'
+                url = 'https://github.com/kwankin-yau/micro-gnss-sdk'
+
+                scm {
+                    connection = 'https://github.com/kwankin-yau/micro-gnss-sdk.git'
+                    developerConnection = 'https://github.com/kwankin-yau/micro-gnss-sdk.git'
+                    url = 'https://github.com/kwankin-yau/micro-gnss-sdk'
+                }
+
+                licenses {
+                    license {
+                        name = 'MIT'
+                        url = 'http://opensource.org/licenses/MIT'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'kky'
+                        name = 'kwankin-yau'
+                        email = 'alphax@vip.163.com'
+                    }
+                }
+            }
         }
     }
 }
 
+javadoc {
+    options.encoding = 'UTF-8'
+
+    if (JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
+    }
+}
+
+signing {
+    sign publishing.publications.maven
+}
 
